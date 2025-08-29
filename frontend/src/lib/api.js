@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+import { API_BASE_URL } from '../config/api.js';
 
 // --- Requisição para Usuários (Clientes/Profissionais) ---
 const apiRequest = async (endpoint, options = {}) => {
@@ -152,7 +152,6 @@ export const testAPI = {
 // Função para buscar planos públicos (sem autenticação)
 export const publicAPI = {
   getPlanos: async (categoria = null) => {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
     const url = categoria ? `${API_BASE_URL}/planos?categoria=${categoria}` : `${API_BASE_URL}/planos`;
     
     const response = await fetch(url);

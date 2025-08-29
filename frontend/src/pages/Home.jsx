@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Sprout, Users, MessageCircle, Star, Check, ArrowRight, UserCheck, Building } from 'lucide-react';
+import { API_BASE_URL } from '../config/api.js';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ const Home = () => {
 
   const fetchPlanos = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
       const response = await fetch(`${API_BASE_URL}/planos`);
       if (response.ok) {
         const data = await response.json();

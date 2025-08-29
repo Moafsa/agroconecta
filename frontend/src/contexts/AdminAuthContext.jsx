@@ -29,7 +29,8 @@ export const AdminAuthProvider = ({ children }) => {
       const refreshAdminData = async () => {
         try {
           setLoading(true);
-          const response = await fetch(`http://localhost:5001/api/admin/auth/me?cacheBust=${Date.now()}`, {
+          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+          const response = await fetch(`${API_BASE_URL}/admin/auth/me?cacheBust=${Date.now()}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -57,7 +58,8 @@ export const AdminAuthProvider = ({ children }) => {
 
   const verifyToken = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/admin/auth/me?cacheBust=${Date.now()}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/admin/auth/me?cacheBust=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -109,7 +111,8 @@ export const AdminAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:5001/api/admin/auth/logout', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      await fetch(`${API_BASE_URL}/admin/auth/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
