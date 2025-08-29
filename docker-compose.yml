@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: agro-conecta-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agro_conecta
+      POSTGRES_USER: agro_user
+      POSTGRES_PASSWORD: agro_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - agro-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agro-conecta-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      FRONTEND_URL: http://localhost:3002
+      DATABASE_URL: postgresql://agro_user:agro_password@postgres:5432/agro_conecta
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      ASAAS_API_KEY: "$$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjMxMjlhMTJkLWFmNGItNGU3MS1iNDNkLTVlZDg5MzFmYmFiMzo6JGFhY2hfN2UwYjVjMzgtMTIyNy00NDcwLWI3MDUtNmQ1NzVkNDUxM2Mz"
+      ASAAS_ENVIRONMENT: sandbox
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    networks:
+      - agro-network
+    command: npm start
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: agro-conecta-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - agro-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+networks:
+  agro-network:
+    driver: bridge

@@ -1,0 +1,399 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id                String   @id @default(cuid())
+  nome              String
+  email             String   @unique
+  senha             String
+  nivel_acesso      NivelAcesso @default(ADMIN)
+  ativo             Boolean  @default(true)
+  pix_wallet        String?  // Chave PIX para recebimento de pagamentos
+  data_cadastro     DateTime @default(now())
+  data_atualizacao  DateTime @updatedAt
+
+  // Relacionamentos
+  planos_criados    Plano[]
+
+  @@map("admins")
+}
+
+model Profissional {
+  id                     String   @id @default(cuid())
+  nome                   String
+  email                  String   @unique
+  senha                  String?  // Nullable para OAuth users
+  cpf_cnpj               String?  @unique // CPF or CNPJ of the professional
+  contato                String
+  foto                   String?
+  regiao_atuacao         String
+  status_assinatura      StatusAssinatura @default(PENDENTE)
+  asaas_customer_id      String?  @unique // ID do cliente no Asaas
+  comissao_plataforma    Float?   // Percentual de comissão da plataforma (0-100)
+  data_cadastro          DateTime @default(now())
+  data_atualizacao       DateTime @updatedAt
+
+  // Relacionamentos
+  especialidades         ProfissionalEspecialidade[]
+  agenda_disponibilidade AgendaDisponibilidade[]
+  avaliacoes             Avaliacao[]
+  interacoes             Interacao[]
+  interacoes_cliente     InteracaoCliente[]
+  assinaturas            Assinatura[]
+
+  @@map("profissionais")
+}
+
+model Cliente {
+  id                String   @id @default(cuid())
+  nome              String
+  email             String   @unique
+  senha             String?  // Adicionado para suportar login com senha
+  cpf_cnpj          String?  @unique // CPF or CNPJ of the client
+  contato           String
+  tipo_cliente      TipoCliente @default(PRODUTOR)
+  regiao            String?
+  status_assinatura StatusAssinatura @default(PENDENTE)
+  asaas_customer_id String?  @unique
+  data_cadastro     DateTime @default(now())
+  data_atualizacao  DateTime @updatedAt
+
+  // Relacionamentos
+  assinaturas_cliente AssinaturaCliente[]
+  interacoes_cliente  InteracaoCliente[]
+
+  @@map("clientes")
+}
+
+model Plano {
+  id                String   @id @default(cuid())
+  nome              String
+  descricao         String
+  tipo_plano        TipoPlano
+  categoria         CategoriaPlano @default(PROFISSIONAL)
+  valor             Decimal  @db.Decimal(10,2)
+  periodo           PeriodoPlano @default(MENSAL)
+  recursos          String[] // Array de recursos incluídos
+  limite_consultas  Int?     // Null para ilimitado
+  limite_profissionais Int?  // Para planos de clientes
+  ativo             Boolean  @default(true)
+  admin_criador_id  String
+  data_criacao      DateTime @default(now())
+  data_atualizacao  DateTime @updatedAt
+
+  // Relacionamentos
+  admin_criador     Admin @relation(fields: [admin_criador_id], references: [id])
+  assinaturas       Assinatura[]
+  assinaturas_cliente AssinaturaCliente[]
+
+  @@map("planos")
+}
+
+model Especialidade {
+  id          String @id @default(cuid())
+  nome        String @unique
+  descricao   String?
+  ativo       Boolean @default(true)
+
+  // Relacionamentos
+  profissionais ProfissionalEspecialidade[]
+
+  @@map("especialidades")
+}
+
+model ProfissionalEspecialidade {
+  profissional_id   String
+  especialidade_id  String
+
+  profissional      Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+  especialidade     Especialidade @relation(fields: [especialidade_id], references: [id], onDelete: Cascade)
+
+  @@id([profissional_id, especialidade_id])
+  @@map("profissional_especialidades")
+}
+
+model AgendaDisponibilidade {
+  id              String @id @default(cuid())
+  profissional_id String
+  dia_semana      DiaSemana
+  horario_inicio  String // Ex: "09:00"
+  horario_fim     String // Ex: "18:00"
+  ativo           Boolean @default(true)
+  descricao       String? // Descrição da disponibilidade
+
+  profissional    Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+
+  @@map("agenda_disponibilidade")
+}
+
+model Produtor {
+  id            String   @id @default(cuid())
+  nome          String
+  contato       String
+  email         String?
+  data_cadastro DateTime @default(now())
+
+  // Relacionamentos
+  interacoes    Interacao[]
+  avaliacoes    Avaliacao[]
+
+  @@map("produtores")
+}
+
+model Interacao {
+  id                    String   @id @default(cuid())
+  produtor_id           String
+  profissional_id       String?
+  mensagem_inicial      String
+  status                StatusInteracao @default(EM_ANDAMENTO)
+  dor_cliente           String?
+  data_interacao        DateTime @default(now())
+
+  // Relacionamentos
+  produtor              Produtor @relation(fields: [produtor_id], references: [id], onDelete: Cascade)
+  profissional          Profissional? @relation(fields: [profissional_id], references: [id], onDelete: SetNull)
+  historico_mensagens   HistoricoMensagem[]
+
+  @@map("interacoes")
+}
+
+model InteracaoCliente {
+  id                    String   @id @default(cuid())
+  cliente_id            String
+  profissional_id       String?
+  mensagem_inicial      String
+  status                StatusInteracao @default(EM_ANDAMENTO)
+  tipo_consulta         String?
+  data_interacao        DateTime @default(now())
+
+  // Relacionamentos
+  cliente               Cliente @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  profissional          Profissional? @relation(fields: [profissional_id], references: [id], onDelete: SetNull)
+  historico_mensagens_cliente HistoricoMensagemCliente[]
+
+  @@map("interacoes_cliente")
+}
+
+model HistoricoMensagem {
+  id           String   @id @default(cuid())
+  interacao_id String
+  remetente    TipoRemetente
+  mensagem     String
+  timestamp    DateTime @default(now())
+
+  interacao    Interacao @relation(fields: [interacao_id], references: [id], onDelete: Cascade)
+
+  @@map("historico_mensagens")
+}
+
+model HistoricoMensagemCliente {
+  id                    String   @id @default(cuid())
+  interacao_cliente_id  String
+  remetente             TipoRemetente
+  mensagem              String
+  timestamp             DateTime @default(now())
+
+  interacao_cliente     InteracaoCliente @relation(fields: [interacao_cliente_id], references: [id], onDelete: Cascade)
+
+  @@map("historico_mensagens_cliente")
+}
+
+model Avaliacao {
+  id              String   @id @default(cuid())
+  profissional_id String
+  produtor_id     String
+  nota            Int      @db.SmallInt // 1-5
+  comentario      String?
+  data            DateTime @default(now())
+
+  profissional    Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+  produtor        Produtor @relation(fields: [produtor_id], references: [id], onDelete: Cascade)
+
+  @@map("avaliacoes")
+}
+
+model Assinatura {
+  id                    String   @id @default(cuid())
+  profissional_id       String
+  plano_id              String
+  asaas_subscription_id String   @unique
+  pending_payment_url   String?  // URL para o primeiro pagamento pendente
+  valor                 Decimal  @db.Decimal(10,2)
+  status                StatusAssinatura
+  data_inicio           DateTime
+  data_fim              DateTime?
+  data_criacao          DateTime @default(now())
+  data_atualizacao      DateTime @updatedAt
+
+  profissional          Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+  plano                 Plano @relation(fields: [plano_id], references: [id])
+  pagamentos            Pagamento[]
+
+  @@map("assinaturas")
+}
+
+model AssinaturaCliente {
+  id                    String   @id @default(cuid())
+  cliente_id            String
+  plano_id              String
+  asaas_subscription_id String   @unique
+  pending_payment_url   String?  // URL para o primeiro pagamento pendente
+  valor                 Decimal  @db.Decimal(10,2)
+  status                StatusAssinatura
+  data_inicio           DateTime
+  data_fim              DateTime?
+  data_criacao          DateTime @default(now())
+  data_atualizacao      DateTime @updatedAt
+
+  cliente               Cliente @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  plano                 Plano @relation(fields: [plano_id], references: [id])
+  pagamentos_cliente    PagamentoCliente[]
+
+  @@map("assinaturas_cliente")
+}
+
+model Pagamento {
+  id               String   @id @default(cuid())
+  assinatura_id    String
+  asaas_payment_id String   @unique
+  invoice_url      String?  // URL da fatura no Asaas
+  valor            Decimal  @db.Decimal(10,2)
+  status           StatusPagamento
+  metodo_pagamento MetodoPagamento
+  data_vencimento  DateTime
+  data_pagamento   DateTime?
+  data_criacao     DateTime @default(now())
+
+  assinatura       Assinatura @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
+
+  @@map("pagamentos")
+}
+
+model PagamentoCliente {
+  id               String   @id @default(cuid())
+  assinatura_cliente_id String
+  asaas_payment_id String   @unique
+  invoice_url      String?  // URL da fatura no Asaas
+  valor            Decimal  @db.Decimal(10,2)
+  status           StatusPagamento
+  metodo_pagamento MetodoPagamento
+  data_vencimento  DateTime
+  data_pagamento   DateTime?
+  data_criacao     DateTime @default(now())
+
+  assinatura_cliente AssinaturaCliente @relation(fields: [assinatura_cliente_id], references: [id], onDelete: Cascade)
+
+  @@map("pagamentos_cliente")
+}
+
+// Enums
+enum NivelAcesso {
+  ADMIN
+  SUPER_ADMIN
+  MODERADOR
+
+  @@map("nivel_acesso")
+}
+
+enum TipoCliente {
+  PRODUTOR
+  EMPRESA
+  COOPERATIVA
+  CONSULTOR
+
+  @@map("tipo_cliente")
+}
+
+enum CategoriaPlano {
+  PROFISSIONAL
+  CLIENTE
+
+  @@map("categoria_plano")
+}
+
+enum PeriodoPlano {
+  MENSAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+
+  @@map("periodo_plano")
+}
+
+enum StatusAssinatura {
+  ATIVO
+  INATIVO
+  PENDENTE
+  CANCELADO
+  VENCIDO
+
+  @@map("status_assinatura")
+}
+
+enum StatusInteracao {
+  AGENDADO
+  CONCLUIDO
+  EM_ANDAMENTO
+  CANCELADO
+
+  @@map("status_interacao")
+}
+
+enum TipoRemetente {
+  PRODUTOR
+  PROFISSIONAL
+  CLIENTE
+  SISTEMA
+
+  @@map("tipo_remetente")
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+
+  @@map("dia_semana")
+}
+
+enum TipoPlano {
+  BASICO
+  PREMIUM
+  ENTERPRISE
+
+  @@map("tipo_plano")
+}
+
+enum StatusPagamento {
+  PENDENTE
+  CONFIRMADO
+  VENCIDO
+  CANCELADO
+  ESTORNADO
+
+  @@map("status_pagamento")
+}
+
+enum MetodoPagamento {
+  PIX
+  BOLETO
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+
+  @@map("metodo_pagamento")
+}
+
