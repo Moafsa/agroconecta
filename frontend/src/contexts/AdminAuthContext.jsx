@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api.js';
 
 const AdminAuthContext = createContext();
 
@@ -29,7 +30,7 @@ export const AdminAuthProvider = ({ children }) => {
       const refreshAdminData = async () => {
         try {
           setLoading(true);
-          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
           const response = await fetch(`${API_BASE_URL}/admin/auth/me?cacheBust=${Date.now()}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -58,7 +59,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const verifyToken = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
       const response = await fetch(`${API_BASE_URL}/admin/auth/me?cacheBust=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -84,7 +85,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const login = async (email, senha) => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
       const response = await fetch(`${API_BASE_URL}/admin/auth/login`, {
         method: 'POST',
         headers: {
@@ -111,7 +112,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
       await fetch(`${API_BASE_URL}/admin/auth/logout`, {
         method: 'POST',
         headers: {

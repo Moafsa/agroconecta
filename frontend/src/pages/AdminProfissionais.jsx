@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { API_BASE_URL } from '../config/api.js';
 import { 
   Plus, 
   Edit, 
@@ -65,7 +66,7 @@ const AdminProfissionais = () => {
       if (searchTerm) params.append('search', searchTerm);
       if (filterEspecialidade) params.append('especialidade', filterEspecialidade);
 
-      const response = await fetch(`http://localhost:5001/api/admin/profissionais?${params}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/profissionais?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -89,8 +90,8 @@ const AdminProfissionais = () => {
 
     try {
       const url = editingProfissional 
-        ? `http://localhost:5001/api/admin/profissionais/${editingProfissional.id}`
-        : 'http://localhost:5001/api/admin/profissionais';
+        ? `${API_BASE_URL}/admin/profissionais/${editingProfissional.id}`
+        : '${API_BASE_URL}/admin/profissionais';
       
       const method = editingProfissional ? 'PUT' : 'POST';
 
@@ -138,7 +139,7 @@ const AdminProfissionais = () => {
     if (!confirm('Tem certeza que deseja deletar este profissional?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5001/api/admin/profissionais/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/profissionais/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
