@@ -32,12 +32,16 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ASAAS_API_KEY: ${ASAAS_API_KEY}
       ASAAS_ENVIRONMENT: production
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     depends_on:
       - postgres
     networks:
       - agro-network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=backend"
+      - "coolify.domains=api.agroconecta.conext.click"
 
   # Frontend
   frontend:
@@ -48,12 +52,16 @@ services:
     restart: unless-stopped
     environment:
       VITE_API_URL: https://api.agroconecta.conext.click
-    expose:
-      - "80"
+    ports:
+      - "3000:80"
     depends_on:
       - backend
     networks:
       - agro-network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=frontend"
+      - "coolify.domains=agroconecta.conext.click"
 
 volumes:
   postgres_data:
