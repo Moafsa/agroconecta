@@ -4,7 +4,7 @@
 
 - Repositório GitHub configurado (✅ Este repositório)
 - Conta no Coolify configurada
-- MongoDB Atlas ou PostgreSQL configurado
+- PostgreSQL configurado (o projeto usa PostgreSQL + Prisma)
 
 ## 🔧 Configuração no Coolify
 
@@ -36,7 +36,7 @@
    PORT=5001
    DATABASE_URL=postgresql://usuario:senha@host:5432/agro_conecta
    JWT_SECRET=seu-jwt-secret-super-seguro-aqui
-   FRONTEND_URL=https://seu-frontend.coolify.app
+   FRONTEND_URL=https://agroconecta.conext.click
    ASAAS_API_KEY=sua-chave-asaas-producao
    ASAAS_ENVIRONMENT=production
    ```
@@ -62,7 +62,7 @@
 
 2. **Variáveis de Ambiente**
    ```env
-   VITE_API_URL=https://seu-backend.coolify.app
+   VITE_API_URL=https://api.agroconecta.conext.click
    NODE_ENV=production
    ```
 
@@ -94,30 +94,37 @@
    DATABASE_URL=postgresql://agro_user:senha@postgres-service:5432/agro_conecta
    ```
 
-#### Opção B: MongoDB Atlas (Externa)
-1. **Configurar no Atlas**
-   - Criar cluster de produção
-   - Adicionar IPs do Coolify à whitelist
-   - Criar usuário de produção
+#### Opção B: PostgreSQL Externo (Neon, Supabase, etc)
+1. **Configurar no Provedor**
+   - Criar banco PostgreSQL na nuvem
+   - Obter string de conexão
+   - Configurar regras de firewall se necessário
 
 2. **String de Conexão**
    ```
-   DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/agro_conecta_prod
+   DATABASE_URL=postgresql://user:password@host:5432/agro_conecta?sslmode=require
    ```
 
 ### 5. Configurar Domínios
 
-1. **Backend**
+🎯 **Com o domínio `agroconecta.conext.click`, o Coolify entenderá automaticamente:**
+
+1. **Backend (API)**
    ```
-   Custom Domain: api.seudominio.com
+   Custom Domain: api.agroconecta.conext.click
    Redirect HTTP to HTTPS: ✅
    ```
 
-2. **Frontend**
+2. **Frontend (App Principal)**
    ```
-   Custom Domain: app.seudominio.com
+   Custom Domain: agroconecta.conext.click
    Redirect HTTP to HTTPS: ✅
    ```
+
+**💡 Dica:** No Coolify, você só precisa informar o domínio principal (`agroconecta.conext.click`). A plataforma automaticamente:
+- Configura SSL/TLS
+- Gera subdomínios para serviços (api.agroconecta.conext.click)
+- Gerencia redirecionamentos HTTPS
 
 ## 🔄 Processo de Deploy
 
@@ -152,13 +159,13 @@
 
 **Backend Health Check**
 ```bash
-# Endpoint: https://api.seudominio.com/health
+# Endpoint: https://api.agroconecta.conext.click/health
 # Expected Response: {"status": "ok", "timestamp": "..."}
 ```
 
 **Frontend Health Check**
 ```bash
-# Endpoint: https://app.seudominio.com
+# Endpoint: https://agroconecta.conext.click
 # Expected: Página carrega corretamente
 ```
 
@@ -184,8 +191,8 @@ No backend, configurar CORS para produção:
 // backend/server.js ou server-prisma.js
 app.use(cors({
   origin: [
-    'https://app.seudominio.com',
-    'https://seudominio.com'
+    'https://agroconecta.conext.click',
+    'https://www.agroconecta.conext.click'
   ],
   credentials: true
 }));
@@ -195,8 +202,7 @@ app.use(cors({
 
 Configurar redirecionamentos no Coolify:
 ```
-seudominio.com → app.seudominio.com
-www.seudominio.com → app.seudominio.com
+www.agroconecta.conext.click → agroconecta.conext.click
 ```
 
 ### 3. SSL/TLS
@@ -267,8 +273,8 @@ DATABASE_URL=string-conexao-dev
 
 ### Checklist Pós-Deploy
 
-- [ ] Backend responde em `https://api.seudominio.com/health`
-- [ ] Frontend carrega em `https://app.seudominio.com`
+- [ ] Backend responde em `https://api.agroconecta.conext.click/health`
+- [ ] Frontend carrega em `https://agroconecta.conext.click`
 - [ ] Chat funciona (envia/recebe mensagens)
 - [ ] Login/registro funcionando
 - [ ] Banco de dados conectado
