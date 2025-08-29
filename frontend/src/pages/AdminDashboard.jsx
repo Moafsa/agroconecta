@@ -4,7 +4,6 @@ import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { API_BASE_URL } from '../config/api.js';
 import { 
   Users, 
   CreditCard, 
@@ -40,17 +39,17 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const [planosStats, clientesStats, profissionaisStats] = await Promise.all([
-        fetch(`${API_BASE_URL}/admin/planos/stats/overview`, {
+        fetch('http://localhost:5001/api/admin/planos/stats/overview', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
           }
         }).then(res => res.json()),
-        fetch(`${API_BASE_URL}/admin/clientes/stats/overview`, {
+        fetch('http://localhost:5001/api/admin/clientes/stats/overview', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
           }
         }).then(res => res.json()),
-        fetch(`${API_BASE_URL}/admin/profissionais/stats/overview`, {
+        fetch('http://localhost:5001/api/admin/profissionais/stats/overview', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
           }

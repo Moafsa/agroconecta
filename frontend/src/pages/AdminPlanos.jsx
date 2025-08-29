@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { API_BASE_URL } from '../config/api.js';
 import { 
   Plus, 
   Edit, 
@@ -52,7 +51,7 @@ const AdminPlanos = () => {
 
   const fetchPlanos = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/admin/planos', {
+      const response = await fetch('http://localhost:5001/api/admin/planos', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -75,8 +74,8 @@ const AdminPlanos = () => {
 
     try {
       const url = editingPlano 
-        ? `${API_BASE_URL}/admin/planos/${editingPlano.id}`
-        : '${API_BASE_URL}/admin/planos';
+        ? `http://localhost:5001/api/admin/planos/${editingPlano.id}`
+        : 'http://localhost:5001/api/admin/planos';
       
       const method = editingPlano ? 'PUT' : 'POST';
 
@@ -128,7 +127,7 @@ const AdminPlanos = () => {
     if (!confirm('Tem certeza que deseja deletar este plano?')) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/planos/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/admin/planos/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -149,7 +148,7 @@ const AdminPlanos = () => {
 
   const handleToggleStatus = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/planos/${id}/toggle`, {
+      const response = await fetch(`http://localhost:5001/api/admin/planos/${id}/toggle`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

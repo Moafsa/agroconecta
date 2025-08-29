@@ -8,7 +8,6 @@ import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { API_BASE_URL } from '../config/api.js';
 import { 
   Plus, 
   Edit, 
@@ -95,8 +94,8 @@ const AdminClientes = () => {
 
     try {
       const url = editingCliente 
-        ? `${API_BASE_URL}/admin/clientes/${editingCliente.id}`
-        : `${API_BASE_URL}/admin/clientes`;
+        ? `http://localhost:5001/api/admin/clientes/${editingCliente.id}`
+        : 'http://localhost:5001/api/admin/clientes';
       
       const method = editingCliente ? 'PUT' : 'POST';
 
