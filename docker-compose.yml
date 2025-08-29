@@ -49,8 +49,8 @@ services:
     restart: unless-stopped
     environment:
       VITE_API_URL: https://api.agroconecta.conext.click
-    ports:
-      - "3000:3000"
+    expose:
+      - "8080"
     depends_on:
       - backend
     networks:
