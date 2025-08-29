@@ -12,13 +12,18 @@ dotenv.config();
 const app = express();
 
 // Middleware
+// Configurar CORS origins
+const corsOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+  : [
+      'http://localhost:3002', 
+      'http://localhost:5173', 
+      'https://agroconecta.conext.click',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'http://localhost:3002', 
-    'http://localhost:5173', 
-    'https://agroconecta.conext.click',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: corsOrigins,
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
