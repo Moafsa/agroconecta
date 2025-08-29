@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Agro-Conecta - PWA Marketplace do Agronegócio
 
 ## 📋 Visão Geral
@@ -408,3 +409,6 @@ Este projeto foi desenvolvido como solução personalizada para o agronegócio.
 
 **Desenvolvido com ❤️ para conectar o agronegócio brasileiro**
 
+=======
+# agroconecta
+>>>>>>> cc3fe5dbeab0ae1a735b98d0cf172c54d1e018a5
