@@ -50,7 +50,7 @@ services:
     environment:
       VITE_API_URL: https://api.agroconecta.conext.click
     ports:
-      - "80:80"
+      - "3000:3000"
     depends_on:
       - backend
     networks:
