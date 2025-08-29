@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -11,8 +11,20 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 3000
+# Build for production
+RUN npm run build
 
-# Default command
-CMD ["npm", "run", "dev"]
+# Production stage
+FROM nginx:alpine
+
+# Copy built files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
