@@ -10,8 +10,8 @@ services:
       POSTGRES_DB: agro_conecta
       POSTGRES_USER: agro_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5433:5432"
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -32,8 +32,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ASAAS_API_KEY: ${ASAAS_API_KEY}
       ASAAS_ENVIRONMENT: production
-    ports:
-      - "5001:5000"
+    expose:
+      - "5000"
     depends_on:
       - postgres
     networks:
@@ -48,8 +48,8 @@ services:
     restart: unless-stopped
     environment:
       VITE_API_URL: https://api.agroconecta.conext.click
-    ports:
-      - "3000:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     networks:
