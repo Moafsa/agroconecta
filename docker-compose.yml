@@ -34,6 +34,8 @@ services:
       ASAAS_ENVIRONMENT: production
     expose:
       - "5000"
+    labels:
+      - "coolify.domains=api.agroconecta.conext.click"
     depends_on:
       - postgres
     networks:
@@ -51,6 +53,8 @@ services:
       VITE_API_URL: https://api.agroconecta.conext.click
     expose:
       - "8080"
+    labels:
+      - "coolify.domains=agroconecta.conext.click"
     depends_on:
       - backend
     networks:
