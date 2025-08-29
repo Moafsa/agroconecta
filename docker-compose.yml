@@ -45,6 +45,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://api.agroconecta.conext.click
     container_name: agro-conecta-frontend
     restart: unless-stopped
     environment:

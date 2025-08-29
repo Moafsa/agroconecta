@@ -1,3 +1,4 @@
+# Force rebuild for API URL fixes - v2025.08.29
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -10,6 +11,10 @@ RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
+
+# Set build-time environment variable
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
 # Build for production
 RUN npm run build
