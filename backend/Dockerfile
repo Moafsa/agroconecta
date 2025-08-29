@@ -22,5 +22,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Default command
-CMD ["npm", "run", "dev"]
+# Default command - run migrations and start
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
