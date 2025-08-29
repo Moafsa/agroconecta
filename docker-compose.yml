@@ -38,10 +38,7 @@ services:
       - postgres
     networks:
       - agro-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(\`api.agroconecta.conext.click\`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+
 
   # Frontend
   frontend:
@@ -58,10 +55,7 @@ services:
       - backend
     networks:
       - agro-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(\`agroconecta.conext.click\`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
 
 volumes:
   postgres_data:
