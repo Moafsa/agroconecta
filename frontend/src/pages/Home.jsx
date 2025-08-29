@@ -18,7 +18,8 @@ const Home = () => {
 
   const fetchPlanos = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/planos');
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/planos`);
       if (response.ok) {
         const data = await response.json();
         setPlanos(data);
