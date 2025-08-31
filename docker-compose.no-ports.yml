@@ -1,0 +1,68 @@
+# Docker Compose SEM conflitos de porta para Coolify
+version: '3.8'
+
+services:
+  # PostgreSQL Database - SEM porta exposta
+  postgres:
+    image: postgres:15-alpine
+    container_name: agro-conecta-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agro_conecta
+      POSTGRES_USER: agro_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agro_password_default}
+      POSTGRES_HOST_AUTH_METHOD: md5
+    # REMOVIDO: ports section para evitar conflitos
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: >
+      postgres 
+      -c listen_addresses='*'
+      -c max_connections=100
+      -c shared_buffers=128MB
+    networks:
+      - agro-network
+
+  # Backend API - SEM porta exposta
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.simple
+    container_name: agro-conecta-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      FRONTEND_URL: ${FRONTEND_URL:-https://agroconecta.conext.click}
+      DATABASE_URL: postgresql://agro_user:${POSTGRES_PASSWORD:-agro_password_default}@postgres:5432/agro_conecta
+      JWT_SECRET: ${JWT_SECRET:-default-jwt-secret-change-in-production}
+      ASAAS_API_KEY: ${ASAAS_API_KEY}
+      ASAAS_ENVIRONMENT: ${ASAAS_ENVIRONMENT:-sandbox}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://agroconecta.conext.click,https://www.agroconecta.conext.click}
+    # REMOVIDO: ports section para evitar conflitos
+    depends_on:
+      - postgres
+    networks:
+      - agro-network
+
+  # Frontend - SEM porta exposta
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.simple
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.agroconecta.conext.click/api}
+    container_name: agro-conecta-frontend
+    restart: unless-stopped
+    # REMOVIDO: ports section para evitar conflitos
+    depends_on:
+      - backend
+    networks:
+      - agro-network
+
+volumes:
+  postgres_data:
+
+networks:
+  agro-network:
+    driver: bridge
