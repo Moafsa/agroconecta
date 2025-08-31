@@ -27,7 +27,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.ultra-simple
+      dockerfile: Dockerfile.prisma-fix
     container_name: agro-conecta-backend
     restart: unless-stopped
     environment:

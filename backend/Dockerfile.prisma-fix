@@ -1,0 +1,35 @@
+FROM node:20-slim
+
+# Install system dependencies specifically for Prisma
+RUN apt-get update && apt-get install -y \
+    curl \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with specific flags
+RUN npm install --verbose --no-optional
+
+# Copy Prisma schema BEFORE generating
+COPY prisma ./prisma/
+
+# Set Prisma environment variables
+ENV PRISMA_CLI_BINARY_TARGETS=debian-openssl-3.0.x
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+
+# Generate Prisma client with specific target
+RUN npx prisma generate --schema=./prisma/schema.prisma
+
+# Copy rest of the application
+COPY . .
+
+# Expose port
+EXPOSE 5000
+
+# Start command with Prisma migration
+CMD ["sh", "-c", "echo 'Starting AgroConecta Backend...' && echo 'DATABASE_URL:' && echo $DATABASE_URL && npx prisma migrate deploy && echo 'Starting Node.js server...' && node server-prisma.js"]
