@@ -1,13 +1,16 @@
 FROM node:20-slim
 
-# Install basic dependencies
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install system dependencies including openssl for Prisma
+RUN apt-get update && apt-get install -y \
+    curl \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files and install ALL dependencies (not just production)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
 
 # Copy Prisma files and generate client
 COPY prisma ./prisma/
@@ -19,5 +22,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Simple start command
-CMD ["sh", "-c", "npx prisma migrate deploy && node server-prisma.js"]
+# Simple start command with better error handling
+CMD ["sh", "-c", "echo 'Starting backend...' && npx prisma migrate deploy && echo 'Starting server...' && node server-prisma.js"]

@@ -27,7 +27,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile.ultra-simple
     container_name: agro-conecta-backend
     restart: unless-stopped
     environment:
