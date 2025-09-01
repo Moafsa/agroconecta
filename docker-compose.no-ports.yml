@@ -36,7 +36,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://agroconecta.conext.click}
       DATABASE_URL: postgresql://agro_user:${POSTGRES_PASSWORD:-agro_password_default}@postgres:5432/agro_conecta
       JWT_SECRET: ${JWT_SECRET:-default-jwt-secret-change-in-production}
-      ASAAS_API_KEY: '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjBhZjI1ZTAyLWQzNzEtNDYyNS05OWI4LTM1MmY2YzkzNzNiOTo6JGFhY2hfZjRkY2M2ZmYtODBiYy00OTRmLWIzYzYtZGJhMGIxNGFmMTI5'
+      ASAAS_API_KEY: "$$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjBhZjI1ZTAyLWQzNzEtNDYyNS05OWI4LTM1MmY2YzkzNzNiOTo6JGFhY2hfZjRkY2M2ZmYtODBiYy00OTRmLWIzYzYtZGJhMGIxNGFmMTI5"
       ASAAS_ENVIRONMENT: ${ASAAS_ENVIRONMENT:-sandbox}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://agroconecta.conext.click,https://www.agroconecta.conext.click}
     # REMOVIDO: ports section para evitar conflitos
