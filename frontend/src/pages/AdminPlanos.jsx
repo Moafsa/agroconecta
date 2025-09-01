@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { API_BASE_URL } from '../config/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -51,7 +52,7 @@ const AdminPlanos = () => {
 
   const fetchPlanos = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/planos', {
+      const response = await fetch(`${API_BASE_URL}/admin/planos`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -74,8 +75,8 @@ const AdminPlanos = () => {
 
     try {
       const url = editingPlano 
-        ? `http://localhost:5001/api/admin/planos/${editingPlano.id}`
-        : 'http://localhost:5001/api/admin/planos';
+        ? `${API_BASE_URL}/admin/planos/${editingPlano.id}`
+        : `${API_BASE_URL}/admin/planos`;
       
       const method = editingPlano ? 'PUT' : 'POST';
 
@@ -127,7 +128,7 @@ const AdminPlanos = () => {
     if (!confirm('Tem certeza que deseja deletar este plano?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5001/api/admin/planos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/planos/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -148,7 +149,7 @@ const AdminPlanos = () => {
 
   const handleToggleStatus = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/admin/planos/${id}/toggle`, {
+      const response = await fetch(`${API_BASE_URL}/admin/planos/${id}/toggle`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { API_BASE_URL } from '../config/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -94,8 +95,8 @@ const AdminClientes = () => {
 
     try {
       const url = editingCliente 
-        ? `http://localhost:5001/api/admin/clientes/${editingCliente.id}`
-        : 'http://localhost:5001/api/admin/clientes';
+        ? `${API_BASE_URL}/admin/clientes/${editingCliente.id}`
+        : `${API_BASE_URL}/admin/clientes`;
       
       const method = editingCliente ? 'PUT' : 'POST';
 
