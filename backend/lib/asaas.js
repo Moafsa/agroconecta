@@ -3,6 +3,10 @@ const axios = require('axios');
 // Configurar cliente Asaas
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
 const ASAAS_ENVIRONMENT = process.env.ASAAS_ENVIRONMENT || 'sandbox';
+
+// Debug: Log das variáveis de ambiente
+console.log('🔑 ASAAS_API_KEY configurada:', ASAAS_API_KEY ? '✅ Sim' : '❌ Não encontrada');
+console.log('🌍 ASAAS_ENVIRONMENT:', ASAAS_ENVIRONMENT);
 const ASAAS_BASE_URL = ASAAS_ENVIRONMENT === 'production' 
   ? 'https://www.asaas.com/api/v3' 
   : 'https://sandbox.asaas.com/api/v3';

@@ -58,6 +58,7 @@ app.use('/api/assinaturas', require('./routes/assinaturas'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/teste-pagamento', testePagamentoRoutes); // Adicionando a rota de teste
+app.use('/api/debug', require('./routes/debug')); // Rota de debug
 
 // Rotas do Painel Administrativo
 app.use('/api/admin/auth', require('./routes/admin-auth'));
