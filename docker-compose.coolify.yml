@@ -66,6 +66,8 @@ services:
       dockerfile: Dockerfile.coolify
       args:
         VITE_API_URL: ${VITE_API_URL:-https://api.agroconecta.conext.click/api}
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-https://api.agroconecta.conext.click/api}
     container_name: agro-conecta-frontend
     restart: unless-stopped
     ports:
