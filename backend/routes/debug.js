@@ -124,4 +124,23 @@ router.get('/asaas-test', async (req, res) => {
   }
 });
 
+// Debug endpoint para verificar configuração do N8N
+router.get('/n8n-config', (req, res) => {
+  const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
+  
+  res.json({
+    success: true,
+    message: 'N8N configuration debug',
+    config: {
+      N8N_WEBHOOK_URL: {
+        exists: !!N8N_WEBHOOK_URL,
+        length: N8N_WEBHOOK_URL ? N8N_WEBHOOK_URL.length : 0,
+        startsWithHttp: N8N_WEBHOOK_URL ? N8N_WEBHOOK_URL.startsWith('http') : false,
+        firstChars: N8N_WEBHOOK_URL ? N8N_WEBHOOK_URL.substring(0, 30) + '...' : 'undefined'
+      }
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 module.exports = router;
