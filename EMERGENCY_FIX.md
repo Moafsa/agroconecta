@@ -3,7 +3,7 @@
 ## ⚡ AÇÃO IMEDIATA
 
 O erro `Bind for 0.0.0.0:5000 failed: port is already allocated` significa que há conflito de portas. Execute estes comandos **AGORA** no terminal do Coolify:
-
+hh
 ### 1️⃣ PARAR TUDO
 ```bash
 # Parar todos os containers

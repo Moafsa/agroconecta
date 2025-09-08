@@ -7,6 +7,14 @@ const ASAAS_ENVIRONMENT = process.env.ASAAS_ENVIRONMENT || 'sandbox';
 // Debug: Log das variáveis de ambiente
 console.log('🔑 ASAAS_API_KEY configurada:', ASAAS_API_KEY ? '✅ Sim' : '❌ Não encontrada');
 console.log('🌍 ASAAS_ENVIRONMENT:', ASAAS_ENVIRONMENT);
+
+// Adicionar o $ diretamente na chave se não estiver presente
+const formattedApiKey = ASAAS_API_KEY && !ASAAS_API_KEY.startsWith('$') 
+  ? `$${ASAAS_API_KEY}` 
+  : ASAAS_API_KEY;
+
+console.log('🔑 Chave formatada:', formattedApiKey ? '✅ Sim' : '❌ Não encontrada');
+
 const ASAAS_BASE_URL = ASAAS_ENVIRONMENT === 'production' 
   ? 'https://www.asaas.com/api/v3' 
   : 'https://sandbox.asaas.com/api/v3';
@@ -15,7 +23,7 @@ const ASAAS_BASE_URL = ASAAS_ENVIRONMENT === 'production'
 const asaasApi = axios.create({
   baseURL: ASAAS_BASE_URL,
   headers: {
-    'access_token': ASAAS_API_KEY,
+    'access_token': formattedApiKey,
     'Content-Type': 'application/json'
   }
 });

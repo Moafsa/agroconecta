@@ -50,3 +50,4 @@ volumes:
 networks:
   agro-network:
     driver: bridge
+
