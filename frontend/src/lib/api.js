@@ -17,7 +17,7 @@ const apiRequest = async (endpoint, options = {}) => {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
     console.log('[API Request] Authorization header set.');
-  } else if (!endpoint.includes('/public/') && !endpoint.includes('/auth/')) {
+  } else if (!endpoint.includes('/public/') && !endpoint.includes('/auth/') && !endpoint.includes('/chat/')) {
     console.error('[API Request] Access token is required but not found.');
     throw new Error('Token de acesso requerido');
   }
