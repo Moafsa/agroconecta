@@ -31,10 +31,25 @@ router.post('/message', async (req, res) => {
       timeout: 10000 // 10 segundos de timeout
     });
 
+    console.log('🔗 Resposta do n8n:', JSON.stringify(n8nResponse.data, null, 2));
+
+    // Processar resposta do n8n - tentar diferentes formatos possíveis
+    let responseText = 'Mensagem recebida, processando...';
+    
+    if (n8nResponse.data) {
+      // Tentar diferentes campos onde a resposta pode estar
+      responseText = n8nResponse.data.response || 
+                    n8nResponse.data.message || 
+                    n8nResponse.data.text || 
+                    n8nResponse.data.output ||
+                    n8nResponse.data.result ||
+                    (typeof n8nResponse.data === 'string' ? n8nResponse.data : responseText);
+    }
+
     // Retornar a resposta do n8n para o frontend
     res.json({
       message: 'Mensagem processada com sucesso',
-      response: n8nResponse.data.response || 'Mensagem recebida, processando...'
+      response: responseText
     });
 
   } catch (error) {
