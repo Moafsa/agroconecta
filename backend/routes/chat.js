@@ -53,9 +53,28 @@ router.post('/message', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro ao processar mensagem:', error);
+    console.error('❌ Erro ao processar mensagem:', error.message);
+    console.error('❌ Erro completo:', error);
     
-    // Resposta de fallback caso o n8n não esteja disponível
+    // Se for erro de timeout ou conexão com n8n
+    if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      console.error('❌ Erro de conexão com n8n:', error.code);
+      return res.json({
+        message: 'Erro de conexão',
+        response: 'Desculpe, não consegui conectar com o assistente. Tente novamente em alguns instantes.'
+      });
+    }
+    
+    // Se for erro HTTP do n8n
+    if (error.response) {
+      console.error('❌ Erro HTTP do n8n:', error.response.status, error.response.data);
+      return res.json({
+        message: 'Erro no processamento',
+        response: 'O assistente está temporariamente indisponível. Nossa equipe foi notificada.'
+      });
+    }
+    
+    // Resposta de fallback genérica
     res.json({
       message: 'Mensagem recebida',
       response: 'Obrigado pela sua mensagem! Nossa equipe irá analisá-la e entrar em contato em breve.'
