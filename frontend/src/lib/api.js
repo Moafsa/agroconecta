@@ -23,11 +23,20 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 
   try {
+    console.log(`[API Request] Making request to: ${url}`);
+    console.log(`[API Request] Options:`, options);
+    
     const response = await fetch(url, { // Garante que 'url' seja usado aqui
       ...options,
       headers,
     });
+    
+    console.log(`[API Request] Response status: ${response.status}`);
+    console.log(`[API Request] Response ok: ${response.ok}`);
+    
     const data = await response.json();
+    console.log(`[API Request] Response data:`, data);
+    
     if (!response.ok) {
       // Pass the whole data object in the error
       throw { status: response.status, ...data };

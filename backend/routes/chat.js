@@ -31,26 +31,49 @@ router.post('/message', async (req, res) => {
       timeout: 10000 // 10 segundos de timeout
     });
 
-    console.log('🔗 Resposta do n8n:', JSON.stringify(n8nResponse.data, null, 2));
+    console.log('🔗 Resposta completa do n8n:', JSON.stringify(n8nResponse.data, null, 2));
+    console.log('🔗 Status do n8n:', n8nResponse.status);
+    console.log('🔗 Headers do n8n:', n8nResponse.headers);
 
     // Processar resposta do n8n - tentar diferentes formatos possíveis
     let responseText = 'Mensagem recebida, processando...';
     
     if (n8nResponse.data) {
+      console.log('🔗 Tipo de dados recebidos:', typeof n8nResponse.data);
+      console.log('🔗 É array?', Array.isArray(n8nResponse.data));
+      
+      // Se for array, pegar o primeiro item
+      let responseData = n8nResponse.data;
+      if (Array.isArray(n8nResponse.data) && n8nResponse.data.length > 0) {
+        responseData = n8nResponse.data[0];
+        console.log('🔗 Primeiro item do array:', responseData);
+      }
+      
+      console.log('🔗 Chaves disponíveis:', Object.keys(responseData));
+      
       // Tentar diferentes campos onde a resposta pode estar
-      responseText = n8nResponse.data.response || 
-                    n8nResponse.data.message || 
-                    n8nResponse.data.text || 
-                    n8nResponse.data.output ||
-                    n8nResponse.data.result ||
-                    (typeof n8nResponse.data === 'string' ? n8nResponse.data : responseText);
+      // Baseado no fluxo n8n: output -> message
+      responseText = responseData.message || 
+                    responseData.response || 
+                    responseData.text || 
+                    responseData.output ||
+                    responseData.result ||
+                    responseData.reply ||
+                    responseData.answer ||
+                    (typeof responseData === 'string' ? responseData : responseText);
+      
+      console.log('🔗 Texto de resposta extraído:', responseText);
     }
 
     // Retornar a resposta do n8n para o frontend
-    res.json({
+    const finalResponse = {
       message: 'Mensagem processada com sucesso',
       response: responseText
-    });
+    };
+    
+    console.log('📤 Resposta final enviada para o frontend:', JSON.stringify(finalResponse, null, 2));
+    
+    res.json(finalResponse);
 
   } catch (error) {
     console.error('❌ Erro ao processar mensagem:', error.message);
@@ -68,6 +91,15 @@ router.post('/message', async (req, res) => {
     // Se for erro HTTP do n8n
     if (error.response) {
       console.error('❌ Erro HTTP do n8n:', error.response.status, error.response.data);
+      
+      // Se for erro 404 (webhook não registrado)
+      if (error.response.status === 404) {
+        return res.json({
+          message: 'Webhook não registrado',
+          response: 'O assistente está sendo configurado. Por favor, tente novamente em alguns instantes ou entre em contato conosco.'
+        });
+      }
+      
       return res.json({
         message: 'Erro no processamento',
         response: 'O assistente está temporariamente indisponível. Nossa equipe foi notificada.'

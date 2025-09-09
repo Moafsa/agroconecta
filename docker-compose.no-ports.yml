@@ -39,7 +39,6 @@ services:
       ASAAS_API_KEY: ${ASAAS_API_KEY}
       ASAAS_ENVIRONMENT: ${ASAAS_ENVIRONMENT:-sandbox}
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://agroconecta.conext.click,https://www.agroconecta.conext.click}
     # REMOVIDO: ports section para evitar conflitos
     depends_on:
       - postgres

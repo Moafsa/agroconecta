@@ -49,6 +49,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ASAAS_API_KEY: ${ASAAS_API_KEY}
       ASAAS_ENVIRONMENT: production
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL}
       # CORS configuration for production
       CORS_ORIGINS: https://agroconecta.conext.click,https://www.agroconecta.conext.click
     ports:

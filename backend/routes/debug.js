@@ -143,6 +143,73 @@ router.get('/n8n-config', (req, res) => {
   });
 });
 
+// Endpoint para testar conexão com N8N
+router.get('/n8n-test', async (req, res) => {
+  const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
+  
+  if (!N8N_WEBHOOK_URL) {
+    return res.status(500).json({
+      success: false,
+      error: 'N8N_WEBHOOK_URL not configured',
+      message: 'The N8N_WEBHOOK_URL environment variable is not set'
+    });
+  }
+
+  try {
+    const axios = require('axios');
+    
+    const testMessage = {
+      message: 'Health check from Agro-Conecta',
+      produtor_id: null,
+      timestamp: new Date().toISOString()
+    };
+    
+    const response = await axios.post(N8N_WEBHOOK_URL, testMessage, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    res.json({
+      success: true,
+      message: 'N8N connection test successful',
+      status: response.status,
+      response: response.data,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    let errorInfo = {
+      success: false,
+      error: 'N8N connection test failed',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    };
+    
+    if (error.response) {
+      errorInfo.status = error.response.status;
+      errorInfo.responseData = error.response.data;
+      
+      if (error.response.status === 404) {
+        errorInfo.solution = {
+          step1: 'Acesse o n8n: https://wapp.conext.click',
+          step2: 'Abra o workflow "Agroconecta Website"',
+          step3: 'Clique no botão "Execute workflow" (botão vermelho)',
+          step4: 'Isso registrará o webhook temporariamente',
+          step5: 'Teste novamente este endpoint'
+        };
+      }
+    } else if (error.code === 'ECONNABORTED') {
+      errorInfo.message = 'Timeout - o n8n demorou mais de 10 segundos para responder';
+    } else if (error.code === 'ENOTFOUND') {
+      errorInfo.message = 'DNS não encontrado - verifique se a URL está correta';
+    }
+    
+    res.status(500).json(errorInfo);
+  }
+});
+
 // Endpoint de teste simples
 router.get('/ping', (req, res) => {
   res.json({

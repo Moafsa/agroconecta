@@ -1,0 +1,15 @@
+[33m9c54aef[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m revert: Back to POST method for n8n webhook
+[33mc377c75[m fix: Change n8n webhook from POST to GET request
+[33m281a117[m add ping endpoint
+[33m4915540[m revert: CORS configuration to working state
+[33mbf1be36[m fix: Improve CORS configuration with detailed logging
+[33mc3c90b3[m improve error handling for n8n webhook
+[33m91b8b4e[m fix n8n response processing
+[33ma0feb2e[m fix chat auth
+[33me9ee135[m feat: Add N8N webhook integration for chat functionality
+[33m5493ad8[m fix: Use nginx.coolify.conf in Dockerfile.simple for proper Coolify deployment
+[33m0a22b99[m refactor: Remove hardcoded ASAAS_API_KEY from docker-compose
+[33m7dc54db[m resolve: Merge conflict in docker-compose.no-ports.yml - keep version without docker-compose.no-ports.yml prefix
+[33mcf0c4a1[m fix: Add $ prefix to ASAAS_API_KEY in code instead of environment variable
+[33mfb6909d[m Update docker-compose.no-ports.yml
+[33ma980934[m chore: Force commit to trigger deployment

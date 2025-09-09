@@ -42,7 +42,9 @@ const ChatWindow = () => {
     setIsLoading(true);
 
     try {
+      console.log('📤 Enviando mensagem:', inputMessage);
       const response = await chatAPI.sendMessage(inputMessage);
+      console.log('📥 Resposta recebida:', response);
       
       const botMessage = {
         id: Date.now() + 1,
@@ -51,6 +53,7 @@ const ChatWindow = () => {
         timestamp: new Date()
       };
 
+      console.log('🤖 Mensagem do bot criada:', botMessage);
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);

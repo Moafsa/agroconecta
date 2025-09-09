@@ -46,7 +46,7 @@ app.use(passport.session());
 
 // Middleware de log
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`📡 ${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('origin') || 'none'}`);
   next();
 });
 
