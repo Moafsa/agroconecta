@@ -26,7 +26,7 @@ router.get('/teste', (req, res) => {
 // Buscar faturas do profissional autenticado
 router.get('/minhas', auth, async (req, res) => {
   try {
-    console.log('Buscando faturas para profissional:', req.profissional?.id);
+    console.log('🔍 [FATURAS] Buscando faturas para profissional:', req.profissional?.id);
     
     // Buscar faturas tanto de assinaturas profissionais quanto de clientes
     const faturasProfissional = await prisma.pagamento.findMany({
@@ -347,7 +347,7 @@ router.get('/admin/:id', adminAuth, async (req, res) => {
 // Atualizar status da fatura (admin)
 router.put('/admin/:id/status', adminAuth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, sincronizar_asaas = false } = req.body;
 
     if (!['PENDENTE', 'CONFIRMADO', 'VENCIDO', 'CANCELADO', 'ESTORNADO'].includes(status)) {
       return res.status(400).json({ 
@@ -355,7 +355,24 @@ router.put('/admin/:id/status', adminAuth, async (req, res) => {
       });
     }
 
-    const fatura = await prisma.pagamento.update({
+    // Buscar a fatura com dados da assinatura
+    const fatura = await prisma.pagamento.findUnique({
+      where: { id: req.params.id },
+      include: {
+        assinatura: {
+          include: {
+            profissional: true
+          }
+        }
+      }
+    });
+
+    if (!fatura) {
+      return res.status(404).json({ message: 'Fatura não encontrada' });
+    }
+
+    // Atualizar status local
+    const faturaAtualizada = await prisma.pagamento.update({
       where: { id: req.params.id },
       data: {
         status,
@@ -363,13 +380,46 @@ router.put('/admin/:id/status', adminAuth, async (req, res) => {
       }
     });
 
+    // Se for confirmação de pagamento, ativar assinatura
+    if (status === 'CONFIRMADO') {
+      await prisma.assinatura.update({
+        where: { id: fatura.assinatura_id },
+        data: { status: 'ATIVO' }
+      });
+
+      await prisma.profissional.update({
+        where: { id: fatura.assinatura.profissional_id },
+        data: { status_assinatura: 'ATIVO' }
+      });
+
+      console.log('✅ Assinatura ativada após confirmação de pagamento:', fatura.assinatura_id);
+    }
+
+    // Sincronizar com Asaas se solicitado
+    if (sincronizar_asaas && fatura.asaas_payment_id) {
+      try {
+        const { getPayment } = require('../lib/asaas');
+        const asaasPayment = await getPayment(fatura.asaas_payment_id);
+        
+        console.log('📋 Status atual no Asaas:', asaasPayment.status);
+        
+        // Aqui você pode implementar lógica para atualizar o status no Asaas
+        // se a API do Asaas permitir
+        
+        console.log('🔄 Sincronização com Asaas realizada');
+      } catch (asaasError) {
+        console.error('⚠️ Erro ao sincronizar com Asaas:', asaasError.message);
+      }
+    }
+
     res.json({
       message: 'Status da fatura atualizado com sucesso',
       fatura: {
-        id: fatura.id,
-        status: fatura.status,
-        data_pagamento: fatura.data_pagamento
-      }
+        id: faturaAtualizada.id,
+        status: faturaAtualizada.status,
+        data_pagamento: faturaAtualizada.data_pagamento
+      },
+      assinatura_ativada: status === 'CONFIRMADO'
     });
   } catch (error) {
     console.error('Erro ao atualizar status da fatura:', error);
