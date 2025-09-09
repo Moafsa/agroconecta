@@ -79,7 +79,7 @@ const DashboardMenu = ({ isOpen, onToggle }) => {
 
       {/* Menu lateral */}
       <div className={`
-        fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50
+        fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:shadow-none
       `}>
@@ -126,7 +126,7 @@ const DashboardMenu = ({ isOpen, onToggle }) => {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+        <div className="mt-auto p-4 border-t">
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-gray-900">{user?.nome}</p>
             <p className="text-xs text-gray-600">{user?.email}</p>
