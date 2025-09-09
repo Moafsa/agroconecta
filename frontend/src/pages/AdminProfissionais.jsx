@@ -42,6 +42,8 @@ const AdminProfissionais = () => {
     total: 0,
     pages: 0
   });
+  const [showFaturas, setShowFaturas] = useState(null);
+  const [faturas, setFaturas] = useState([]);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -176,6 +178,59 @@ const AdminProfissionais = () => {
       'PENDENTE': 'bg-yellow-100 text-yellow-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const fetchFaturas = async (profissionalId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/profissionais/${profissionalId}/faturas`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFaturas(data.faturas);
+        setShowFaturas(profissionalId);
+      } else {
+        setMessage({ type: 'error', text: 'Erro ao buscar faturas' });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar faturas:', error);
+      setMessage({ type: 'error', text: 'Erro ao buscar faturas' });
+    }
+  };
+
+  const confirmarPagamento = async (profissionalId, assinaturaId, pagamentoId) => {
+    if (!confirm('Tem certeza que deseja confirmar este pagamento? Isso ativará a assinatura do profissional.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/profissionais/${profissionalId}/confirmar-pagamento`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        },
+        body: JSON.stringify({
+          assinatura_id: assinaturaId,
+          pagamento_id: pagamentoId
+        })
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Pagamento confirmado e assinatura ativada com sucesso!' });
+        fetchFaturas(profissionalId); // Recarregar faturas
+        fetchProfissionais(); // Recarregar lista de profissionais
+      } else {
+        const data = await response.json();
+        setMessage({ type: 'error', text: data.message });
+      }
+    } catch (error) {
+      console.error('Erro ao confirmar pagamento:', error);
+      setMessage({ type: 'error', text: 'Erro ao confirmar pagamento' });
+    }
   };
 
   if (loading && profissionais.length === 0) {
@@ -454,6 +509,14 @@ const AdminProfissionais = () => {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => fetchFaturas(profissional.id)}
+                      title="Ver Faturas"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleEdit(profissional)}
                     >
                       <Edit className="h-4 w-4" />
@@ -472,6 +535,95 @@ const AdminProfissionais = () => {
             </Card>
           ))}
         </div>
+
+        {/* Seção de Faturas */}
+        {showFaturas && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span>Faturas do Profissional</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFaturas(null)}
+                >
+                  Fechar
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {faturas.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">
+                  Nenhuma fatura encontrada para este profissional.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {faturas.map((fatura) => (
+                    <div key={fatura.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className="font-semibold">
+                              Fatura #{fatura.asaas_payment_id}
+                            </h4>
+                            <Badge className={getStatusColor(fatura.status)}>
+                              {fatura.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                            <div>
+                              <span className="font-medium">Valor:</span> R$ {parseFloat(fatura.valor).toFixed(2)}
+                            </div>
+                            <div>
+                              <span className="font-medium">Vencimento:</span> {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR')}
+                            </div>
+                            <div>
+                              <span className="font-medium">Método:</span> {fatura.metodo_pagamento}
+                            </div>
+                            {fatura.data_pagamento && (
+                              <div>
+                                <span className="font-medium">Pago em:</span> {new Date(fatura.data_pagamento).toLocaleDateString('pt-BR')}
+                              </div>
+                            )}
+                          </div>
+
+                          {fatura.assinatura && (
+                            <div className="mt-2 text-sm text-gray-600">
+                              <span className="font-medium">Plano:</span> {fatura.assinatura.plano.nome}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex space-x-2">
+                          {fatura.status === 'PENDENTE' && (
+                            <Button
+                              size="sm"
+                              onClick={() => confirmarPagamento(showFaturas, fatura.assinatura.id, fatura.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Confirmar Pagamento
+                            </Button>
+                          )}
+                          
+                          {fatura.invoice_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(fatura.invoice_url, '_blank')}
+                            >
+                              Ver Fatura
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pagination */}
         {pagination.pages > 1 && (
