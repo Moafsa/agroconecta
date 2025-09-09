@@ -182,22 +182,28 @@ const AdminProfissionais = () => {
 
   const fetchFaturas = async (profissionalId) => {
     try {
+      console.log('🔍 Buscando faturas para profissional:', profissionalId);
       const response = await fetch(`${API_BASE_URL}/admin/profissionais/${profissionalId}/faturas`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
 
+      console.log('📡 Resposta da API:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('📋 Faturas recebidas:', data);
         setFaturas(data.faturas);
         setShowFaturas(profissionalId);
       } else {
-        setMessage({ type: 'error', text: 'Erro ao buscar faturas' });
+        const errorData = await response.json();
+        console.error('❌ Erro na API:', errorData);
+        setMessage({ type: 'error', text: `Erro ao buscar faturas: ${errorData.message || 'Erro desconhecido'}` });
       }
     } catch (error) {
-      console.error('Erro ao buscar faturas:', error);
-      setMessage({ type: 'error', text: 'Erro ao buscar faturas' });
+      console.error('❌ Erro ao buscar faturas:', error);
+      setMessage({ type: 'error', text: `Erro ao buscar faturas: ${error.message}` });
     }
   };
 
@@ -490,30 +496,30 @@ const AdminProfissionais = () => {
                       </div>
                     )}
 
-                    {/* Assinaturas Ativas */}
-                    {profissional.assinaturas.length > 0 && (
-                      <div className="mt-4 pt-4 border-t">
-                        <h4 className="font-medium text-sm mb-2">Assinaturas Ativas:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {profissional.assinaturas.map((assinatura) => (
-                            <Badge key={assinatura.id} variant="secondary" className="text-xs">
-                              {assinatura.plano.nome} - R$ {assinatura.plano.valor}
-                            </Badge>
-                          ))}
+                    {/* Status da Assinatura - Simplificado */}
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-sm font-medium">Status da Assinatura:</span>
+                          <Badge className={`ml-2 ${getStatusColor(profissional.status_assinatura)}`}>
+                            {profissional.status_assinatura}
+                          </Badge>
                         </div>
+                        
+                        {profissional.status_assinatura === 'PENDENTE' && (
+                          <Button
+                            size="sm"
+                            onClick={() => fetchFaturas(profissional.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            Confirmar Pagamento
+                          </Button>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => fetchFaturas(profissional.id)}
-                      title="Ver Faturas"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -536,12 +542,12 @@ const AdminProfissionais = () => {
           ))}
         </div>
 
-        {/* Seção de Faturas */}
+        {/* Seção de Faturas - Simplificada */}
         {showFaturas && (
           <Card className="mt-8">
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
-                <span>Faturas do Profissional</span>
+                <span>Confirmar Pagamento</span>
                 <Button
                   variant="outline"
                   size="sm"
@@ -554,57 +560,35 @@ const AdminProfissionais = () => {
             <CardContent>
               {faturas.length === 0 ? (
                 <p className="text-center text-gray-500 py-4">
-                  Nenhuma fatura encontrada para este profissional.
+                  Nenhuma fatura pendente encontrada.
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {faturas.map((fatura) => (
-                    <div key={fatura.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="font-semibold">
-                              Fatura #{fatura.asaas_payment_id}
-                            </h4>
-                            <Badge className={getStatusColor(fatura.status)}>
-                              {fatura.status}
-                            </Badge>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                            <div>
-                              <span className="font-medium">Valor:</span> R$ {parseFloat(fatura.valor).toFixed(2)}
-                            </div>
-                            <div>
-                              <span className="font-medium">Vencimento:</span> {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR')}
-                            </div>
-                            <div>
-                              <span className="font-medium">Método:</span> {fatura.metodo_pagamento}
-                            </div>
-                            {fatura.data_pagamento && (
-                              <div>
-                                <span className="font-medium">Pago em:</span> {new Date(fatura.data_pagamento).toLocaleDateString('pt-BR')}
-                              </div>
-                            )}
-                          </div>
-
+                  {faturas.filter(f => f.status === 'PENDENTE').map((fatura) => (
+                    <div key={fatura.id} className="border rounded-lg p-4 bg-yellow-50">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-semibold text-lg">
+                            R$ {parseFloat(fatura.valor).toFixed(2)}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Vencimento: {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR')}
+                          </p>
                           {fatura.assinatura && (
-                            <div className="mt-2 text-sm text-gray-600">
-                              <span className="font-medium">Plano:</span> {fatura.assinatura.plano.nome}
-                            </div>
+                            <p className="text-sm text-gray-600">
+                              Plano: {fatura.assinatura.plano.nome}
+                            </p>
                           )}
                         </div>
 
                         <div className="flex space-x-2">
-                          {fatura.status === 'PENDENTE' && (
-                            <Button
-                              size="sm"
-                              onClick={() => confirmarPagamento(showFaturas, fatura.assinatura.id, fatura.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              Confirmar Pagamento
-                            </Button>
-                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => confirmarPagamento(showFaturas, fatura.assinatura.id, fatura.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            ✅ Confirmar Pagamento
+                          </Button>
                           
                           {fatura.invoice_url && (
                             <Button
@@ -619,6 +603,12 @@ const AdminProfissionais = () => {
                       </div>
                     </div>
                   ))}
+                  
+                  {faturas.filter(f => f.status === 'PENDENTE').length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma fatura pendente para confirmar.
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>
