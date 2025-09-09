@@ -50,6 +50,8 @@ router.get('/minha', auth, async (req, res) => {
     const userType = req.userType;
     let assinatura;
 
+    console.log(`🔍 [ASSINATURAS] Buscando assinatura para ${userType}:`, user.id);
+
     if (userType === 'profissional') {
       assinatura = await prisma.assinatura.findFirst({
         where: { profissional_id: user.id },
@@ -80,12 +82,20 @@ router.get('/minha', auth, async (req, res) => {
     }
 
     if (!assinatura) {
+      console.log('⚠️ [ASSINATURAS] Nenhuma assinatura encontrada para:', user.id);
       return res.status(404).json({ message: 'Nenhuma assinatura encontrada.' });
     }
 
+    console.log('✅ [ASSINATURAS] Assinatura encontrada:', {
+      id: assinatura.id,
+      status: assinatura.status,
+      pagamentos: assinatura.pagamentos?.length || 0,
+      pagamentos_com_url: assinatura.pagamentos?.filter(p => p.invoice_url)?.length || 0
+    });
+
     res.json(assinatura);
   } catch (error) {
-    console.error('Erro ao buscar assinatura do usuário:', error);
+    console.error('❌ [ASSINATURAS] Erro ao buscar assinatura do usuário:', error);
     res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 });

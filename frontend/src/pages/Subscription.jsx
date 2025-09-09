@@ -167,10 +167,19 @@ const Subscription = () => {
                       <TableCell>R$ {parseFloat(pagamento.valor).toFixed(2)}</TableCell>
                       <TableCell>{getPaymentStatusBadge(pagamento.status)}</TableCell>
                       <TableCell className="text-right">
-                        {pagamento.invoice_url && (
-                          <Button as="a" href={pagamento.invoice_url} target="_blank" variant="outline" size="sm">
+                        {pagamento.invoice_url ? (
+                          <Button 
+                            onClick={() => {
+                              console.log('Abrindo fatura:', pagamento.invoice_url);
+                              window.open(pagamento.invoice_url, '_blank');
+                            }}
+                            variant="outline" 
+                            size="sm"
+                          >
                             Ver Fatura <ExternalLink className="ml-2 h-4 w-4" />
                           </Button>
+                        ) : (
+                          <span className="text-sm text-gray-500">URL não disponível</span>
                         )}
                       </TableCell>
                     </TableRow>

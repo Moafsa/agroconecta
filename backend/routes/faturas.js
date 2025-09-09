@@ -6,7 +6,22 @@ const { mapAsaasStatus, mapAsaasBillingType } = require('../lib/asaas');
 
 const router = express.Router();
 
+// Middleware de log para debug
+router.use((req, res, next) => {
+  console.log(`🔍 [FATURAS] ${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
+
 // ===== ROTAS PARA PROFISSIONAIS =====
+
+// Rota de teste para verificar se a rota está funcionando
+router.get('/teste', (req, res) => {
+  res.json({ 
+    message: 'Rota de faturas funcionando!', 
+    timestamp: new Date().toISOString(),
+    path: req.path 
+  });
+});
 
 // Buscar faturas do profissional autenticado
 router.get('/minhas', auth, async (req, res) => {
