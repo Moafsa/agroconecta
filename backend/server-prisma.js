@@ -70,6 +70,12 @@ app.use('/api/faturas', require('./routes/faturas')); // Rota de faturas
 app.use('/api/teste-pagamento', testePagamentoRoutes); // Adicionando a rota de teste
 app.use('/api/debug', require('./routes/debug')); // Rota de debug
 
+// Log das rotas carregadas
+console.log('✅ Rotas carregadas:');
+console.log('  - /api/webhooks (webhooks)');
+console.log('  - /api/faturas (faturas)');
+console.log('  - /api/assinaturas (assinaturas)');
+
 // Rotas do Painel Administrativo
 app.use('/api/admin/auth', require('./routes/admin-auth'));
 app.use('/api/admin/planos', require('./routes/admin-planos'));

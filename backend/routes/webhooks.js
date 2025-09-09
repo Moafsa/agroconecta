@@ -4,6 +4,22 @@ const { mapAsaasStatus, mapAsaasBillingType } = require('../lib/asaas');
 
 const router = express.Router();
 
+// Middleware de log para debug
+router.use((req, res, next) => {
+  console.log(`🔍 [WEBHOOKS] ${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
+
+// Rota GET para debug (para testar se a rota está funcionando)
+router.get('/asaas', (req, res) => {
+  res.json({ 
+    message: 'Webhook Asaas está funcionando! Use POST para enviar webhooks.',
+    method: 'GET',
+    timestamp: new Date().toISOString(),
+    note: 'Esta rota aceita apenas POST para webhooks reais do Asaas'
+  });
+});
+
 // Webhook do Asaas para notificações de pagamento
 router.post('/asaas', async (req, res) => {
   try {
