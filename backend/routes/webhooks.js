@@ -20,6 +20,50 @@ router.get('/asaas', (req, res) => {
   });
 });
 
+// Rota para testar webhook (simular webhook do Asaas)
+router.post('/asaas/teste', async (req, res) => {
+  try {
+    console.log('🧪 [WEBHOOK TESTE] Simulando webhook do Asaas...');
+    
+    // Simular dados de um webhook do Asaas
+    const webhookTeste = {
+      event: 'PAYMENT_CREATED',
+      payment: {
+        id: 'test-payment-' + Date.now(),
+        subscription: 'test-subscription-123',
+        value: 49.90,
+        status: 'PENDING',
+        billingType: 'PIX',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        invoiceUrl: 'https://sandbox.asaas.com/i/test-invoice',
+        paymentDate: null
+      },
+      subscription: {
+        id: 'test-subscription-123',
+        status: 'ACTIVE'
+      }
+    };
+
+    console.log('📋 [WEBHOOK TESTE] Dados simulados:', webhookTeste);
+    
+    // Processar o webhook simulado
+    await handlePaymentCreated(webhookTeste.payment);
+    
+    res.json({
+      message: 'Webhook de teste processado com sucesso!',
+      webhook_data: webhookTeste,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ [WEBHOOK TESTE] Erro:', error);
+    res.status(500).json({ 
+      message: 'Erro ao processar webhook de teste',
+      error: error.message 
+    });
+  }
+});
+
 // Webhook do Asaas para notificações de pagamento
 router.post('/asaas', async (req, res) => {
   try {

@@ -394,4 +394,118 @@ router.get('/:id/pagamentos', adminAuth, async (req, res) => {
     }
 });
 
+// Rota para confirmar pagamento de um profissional
+router.post('/:id/confirmar-pagamento', adminAuth, async (req, res) => {
+  try {
+    const { assinatura_id, pagamento_id } = req.body;
+    
+    if (!assinatura_id || !pagamento_id) {
+      return res.status(400).json({ 
+        message: 'assinatura_id e pagamento_id são obrigatórios' 
+      });
+    }
+
+    // Buscar o pagamento
+    const pagamento = await prisma.pagamento.findUnique({
+      where: { id: pagamento_id },
+      include: {
+        assinatura: {
+          include: {
+            profissional: true
+          }
+        }
+      }
+    });
+
+    if (!pagamento) {
+      return res.status(404).json({ message: 'Pagamento não encontrado' });
+    }
+
+    // Verificar se o pagamento pertence ao profissional
+    if (pagamento.assinatura.profissional_id !== req.params.id) {
+      return res.status(403).json({ message: 'Pagamento não pertence a este profissional' });
+    }
+
+    // Atualizar status do pagamento
+    await prisma.pagamento.update({
+      where: { id: pagamento_id },
+      data: {
+        status: 'CONFIRMADO',
+        data_pagamento: new Date()
+      }
+    });
+
+    // Ativar assinatura
+    await prisma.assinatura.update({
+      where: { id: assinatura_id },
+      data: { status: 'ATIVO' }
+    });
+
+    // Atualizar status do profissional
+    await prisma.profissional.update({
+      where: { id: req.params.id },
+      data: { status_assinatura: 'ATIVO' }
+    });
+
+    console.log('✅ [ADMIN] Pagamento confirmado e assinatura ativada:', {
+      profissional_id: req.params.id,
+      pagamento_id,
+      assinatura_id
+    });
+
+    res.json({
+      message: 'Pagamento confirmado e assinatura ativada com sucesso',
+      profissional_id: req.params.id,
+      pagamento_id,
+      assinatura_id
+    });
+
+  } catch (error) {
+    console.error('Erro ao confirmar pagamento:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
+// Rota para buscar faturas de um profissional (admin)
+router.get('/:id/faturas', adminAuth, async (req, res) => {
+  try {
+    const faturas = await prisma.pagamento.findMany({
+      where: {
+        assinatura: {
+          profissional_id: req.params.id
+        }
+      },
+      include: {
+        assinatura: {
+          include: {
+            plano: true
+          }
+        }
+      },
+      orderBy: {
+        data_criacao: 'desc'
+      }
+    });
+
+    res.json({
+      faturas: faturas.map(fatura => ({
+        id: fatura.id,
+        asaas_payment_id: fatura.asaas_payment_id,
+        valor: parseFloat(fatura.valor),
+        status: fatura.status,
+        metodo_pagamento: fatura.metodo_pagamento,
+        data_vencimento: fatura.data_vencimento,
+        data_pagamento: fatura.data_pagamento,
+        data_criacao: fatura.data_criacao,
+        invoice_url: fatura.invoice_url,
+        assinatura: fatura.assinatura
+      }))
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar faturas do profissional:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
 module.exports = router;
