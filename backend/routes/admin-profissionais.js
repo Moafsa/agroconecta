@@ -469,6 +469,20 @@ router.post('/:id/confirmar-pagamento', adminAuth, async (req, res) => {
 // Rota para buscar faturas de um profissional (admin)
 router.get('/:id/faturas', adminAuth, async (req, res) => {
   try {
+    console.log('🔍 [ADMIN] Buscando faturas para profissional:', req.params.id);
+    
+    // Primeiro, verificar se o profissional tem assinaturas
+    const assinaturas = await prisma.assinatura.findMany({
+      where: {
+        profissional_id: req.params.id
+      },
+      include: {
+        plano: true
+      }
+    });
+    
+    console.log('📋 [ADMIN] Assinaturas encontradas:', assinaturas.length);
+    
     const faturas = await prisma.pagamento.findMany({
       where: {
         assinatura: {
@@ -487,6 +501,8 @@ router.get('/:id/faturas', adminAuth, async (req, res) => {
       }
     });
 
+    console.log('💰 [ADMIN] Faturas encontradas:', faturas.length);
+
     res.json({
       faturas: faturas.map(fatura => ({
         id: fatura.id,
@@ -499,11 +515,74 @@ router.get('/:id/faturas', adminAuth, async (req, res) => {
         data_criacao: fatura.data_criacao,
         invoice_url: fatura.invoice_url,
         assinatura: fatura.assinatura
-      }))
+      })),
+      assinaturas: assinaturas // Incluir assinaturas na resposta para debug
     });
 
   } catch (error) {
-    console.error('Erro ao buscar faturas do profissional:', error);
+    console.error('❌ [ADMIN] Erro ao buscar faturas do profissional:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
+// Rota para criar fatura de teste (admin)
+router.post('/:id/criar-fatura-teste', adminAuth, async (req, res) => {
+  try {
+    console.log('🧪 [ADMIN] Criando fatura de teste para profissional:', req.params.id);
+    
+    // Buscar assinatura ativa do profissional
+    const assinatura = await prisma.assinatura.findFirst({
+      where: {
+        profissional_id: req.params.id,
+        status: 'PENDENTE'
+      },
+      include: {
+        plano: true
+      }
+    });
+
+    if (!assinatura) {
+      return res.status(404).json({ message: 'Nenhuma assinatura pendente encontrada para este profissional' });
+    }
+
+    // Criar fatura de teste
+    const fatura = await prisma.pagamento.create({
+      data: {
+        assinatura_id: assinatura.id,
+        asaas_payment_id: 'test-payment-' + Date.now(),
+        valor: assinatura.plano.valor,
+        status: 'PENDENTE',
+        metodo_pagamento: 'PIX',
+        data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+        invoice_url: 'https://sandbox.asaas.com/i/test-invoice-' + Date.now()
+      },
+      include: {
+        assinatura: {
+          include: {
+            plano: true
+          }
+        }
+      }
+    });
+
+    console.log('✅ [ADMIN] Fatura de teste criada:', fatura.id);
+
+    res.json({
+      message: 'Fatura de teste criada com sucesso',
+      fatura: {
+        id: fatura.id,
+        asaas_payment_id: fatura.asaas_payment_id,
+        valor: parseFloat(fatura.valor),
+        status: fatura.status,
+        metodo_pagamento: fatura.metodo_pagamento,
+        data_vencimento: fatura.data_vencimento,
+        invoice_url: fatura.invoice_url,
+        assinatura: fatura.assinatura
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [ADMIN] Erro ao criar fatura de teste:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 });

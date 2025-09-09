@@ -194,6 +194,7 @@ const AdminProfissionais = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('📋 Faturas recebidas:', data);
+        console.log('📋 Assinaturas encontradas:', data.assinaturas);
         setFaturas(data.faturas);
         setShowFaturas(profissionalId);
       } else {
@@ -236,6 +237,36 @@ const AdminProfissionais = () => {
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
       setMessage({ type: 'error', text: 'Erro ao confirmar pagamento' });
+    }
+  };
+
+  const criarFaturaTeste = async (profissionalId) => {
+    if (!confirm('Criar uma fatura de teste para este profissional?')) {
+      return;
+    }
+
+    try {
+      console.log('🧪 Criando fatura de teste para:', profissionalId);
+      const response = await fetch(`${API_BASE_URL}/admin/profissionais/${profissionalId}/criar-fatura-teste`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Fatura de teste criada:', data);
+        setMessage({ type: 'success', text: 'Fatura de teste criada com sucesso!' });
+        fetchFaturas(profissionalId); // Recarregar faturas
+      } else {
+        const data = await response.json();
+        setMessage({ type: 'error', text: data.message });
+      }
+    } catch (error) {
+      console.error('Erro ao criar fatura de teste:', error);
+      setMessage({ type: 'error', text: 'Erro ao criar fatura de teste' });
     }
   };
 
@@ -559,9 +590,17 @@ const AdminProfissionais = () => {
             </CardHeader>
             <CardContent>
               {faturas.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">
-                  Nenhuma fatura pendente encontrada.
-                </p>
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-4">
+                    Nenhuma fatura pendente encontrada.
+                  </p>
+                  <Button
+                    onClick={() => criarFaturaTeste(showFaturas)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    🧪 Criar Fatura de Teste
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-4">
                   {faturas.filter(f => f.status === 'PENDENTE').map((fatura) => (
