@@ -143,4 +143,13 @@ router.get('/n8n-config', (req, res) => {
   });
 });
 
+// Endpoint de teste simples
+router.get('/ping', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Backend funcionando!',
+    timestamp: new Date().toISOString()
+  });
+});
+
 module.exports = router;
