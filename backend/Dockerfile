@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 5000
 
 # Default command - run migrations and start
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node scripts/migrate-verification.js && npm start"]

@@ -9,6 +9,14 @@ const testePagamentoRoutes = require('./routes/teste-pagamento'); // Rota de tes
 // Carregar variáveis de ambiente
 dotenv.config();
 
+// Executar migração de verificação na inicialização
+const { migrateVerificationSystem } = require('./scripts/migrate-verification');
+
+// Executar migração de forma assíncrona
+migrateVerificationSystem().catch(error => {
+  console.error('⚠️ Erro na migração de verificação (continuando...):', error.message);
+});
+
 const app = express();
 
 // Middleware
