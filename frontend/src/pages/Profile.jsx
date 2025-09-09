@@ -7,9 +7,10 @@ import { Textarea } from '../components/ui/textarea';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Loader2, Plus, X, Save, Upload, User, Camera } from 'lucide-react';
+import { Loader2, Plus, X, Save, Upload, User, Camera, Menu } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { professionalAPI } from '../lib/api';
+import DashboardMenu from '../components/DashboardMenu';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -24,6 +25,7 @@ const Profile = () => {
   const [newSpecialty, setNewSpecialty] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -152,14 +154,35 @@ const Profile = () => {
   ];
 
   return (
-    <div className="professional-dashboard">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
-          <p className="text-gray-600 mt-2">
-            Mantenha suas informações atualizadas para receber mais oportunidades
-          </p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Menu lateral */}
+      <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+      
+      {/* Conteúdo principal */}
+      <div className="flex-1 lg:ml-64">
+        {/* Header mobile */}
+        <div className="lg:hidden bg-white shadow-sm border-b p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">Meu Perfil</h1>
+            <div className="w-9" /> {/* Spacer */}
+          </div>
         </div>
+
+        <main className="p-4 lg:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
+              <p className="text-gray-600 mt-2">
+                Mantenha suas informações atualizadas para receber mais oportunidades
+              </p>
+            </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {message.text && (
@@ -380,6 +403,8 @@ const Profile = () => {
             </Button>
           </div>
         </form>
+          </div>
+        </main>
       </div>
     </div>
   );

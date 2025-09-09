@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import DashboardMenu from '@/components/DashboardMenu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,8 @@ import {
   Plus,
   X,
   Eye,
-  Download
+  Download,
+  Menu
 } from 'lucide-react';
 
 const Verificacao = () => {
@@ -27,6 +29,7 @@ const Verificacao = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [menuOpen, setMenuOpen] = useState(false);
   
   // Estados para formulários
   const [documentForm, setDocumentForm] = useState({
@@ -194,24 +197,48 @@ const Verificacao = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando dados de verificação...</p>
+      <div className="min-h-screen bg-gray-50 flex">
+        <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+        <div className="flex-1 lg:ml-64 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Carregando dados de verificação...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Verificação de Conta</h1>
-          <p className="text-gray-600 mt-2">
-            Complete a verificação da sua conta para aumentar sua credibilidade e receber mais oportunidades
-          </p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Menu lateral */}
+      <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+      
+      {/* Conteúdo principal */}
+      <div className="flex-1 lg:ml-64">
+        {/* Header mobile */}
+        <div className="lg:hidden bg-white shadow-sm border-b p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">Verificação</h1>
+            <div className="w-9" /> {/* Spacer */}
+          </div>
         </div>
+
+        <main className="p-4 lg:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Verificação de Conta</h1>
+              <p className="text-gray-600 mt-2">
+                Complete a verificação da sua conta para aumentar sua credibilidade e receber mais oportunidades
+              </p>
+            </div>
 
         {message.text && (
           <Alert className={`mb-6 ${message.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
@@ -478,6 +505,8 @@ const Verificacao = () => {
             </div>
           </CardContent>
         </Card>
+          </div>
+        </main>
       </div>
     </div>
   );

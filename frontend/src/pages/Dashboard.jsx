@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import PendingPaymentBanner from '@/components/PendingPaymentBanner';
+import DashboardMenu from '@/components/DashboardMenu';
 import { interactionAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,8 @@ import {
   Phone,
   Mail,
   Eye,
-  Plus
+  Plus,
+  Menu
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -33,6 +35,7 @@ const Dashboard = () => {
   const [verificationData, setVerificationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isPending = user?.status_assinatura === 'PENDENTE';
 
@@ -158,27 +161,48 @@ const Dashboard = () => {
   };
   
   return (
-    <main className="container mx-auto p-4 space-y-6">
-      {isPending && (
-        <PendingPaymentBanner paymentUrl={user.pending_payment_url} />
-      )}
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Menu lateral */}
+      <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
       
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Bem-vindo, {user?.nome}!</p>
+      {/* Conteúdo principal */}
+      <div className="flex-1 lg:ml-64">
+        {/* Header mobile */}
+        <div className="lg:hidden bg-white shadow-sm border-b p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">Dashboard</h1>
+            <div className="w-9" /> {/* Spacer */}
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => navigate('/profile')}>
-            <Eye className="h-4 w-4 mr-2" />
-            Ver Perfil
-          </Button>
-          <Button onClick={() => navigate('/verificacao')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Verificar Conta
-          </Button>
-        </div>
-      </div>
+
+        <main className="p-4 lg:p-8 space-y-6">
+          {isPending && (
+            <PendingPaymentBanner paymentUrl={user.pending_payment_url} />
+          )}
+          
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-muted-foreground">Bem-vindo, {user?.nome}!</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => navigate('/profile')}>
+                <Eye className="h-4 w-4 mr-2" />
+                Ver Perfil
+              </Button>
+              <Button onClick={() => navigate('/verificacao')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Verificar Conta
+              </Button>
+            </div>
+          </div>
 
       {/* Status de Verificação */}
       {verificationData && (
@@ -304,7 +328,9 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 };
 

@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Subscription from './pages/Subscription';
 import Verificacao from './pages/Verificacao';
+import Faturas from './pages/Faturas';
 
 // Páginas Admin
 import AdminLogin from './pages/AdminLogin';
@@ -60,6 +61,7 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
         <Route path="/verificacao" element={<ProtectedRoute><Verificacao /></ProtectedRoute>} />
+        <Route path="/faturas" element={<ProtectedRoute><Faturas /></ProtectedRoute>} />
       </Route>
 
       {/* Rotas do Painel Administrativo (com AdminLayout) */}

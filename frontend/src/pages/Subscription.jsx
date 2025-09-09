@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { subscriptionAPI } from '@/lib/api';
+import DashboardMenu from '@/components/DashboardMenu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, ExternalLink } from 'lucide-react';
+import { Loader2, AlertCircle, ExternalLink, Menu } from 'lucide-react';
 
 const Subscription = () => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -54,41 +56,73 @@ const Subscription = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-        <p>Carregando assinatura...</p>
+      <div className="min-h-screen bg-gray-50 flex">
+        <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+        <div className="flex-1 lg:ml-64 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <p>Carregando assinatura...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-4">
-            <Card className="bg-red-50 border-red-200">
-                <CardContent className="p-4 flex items-center">
-                    <AlertCircle className="h-6 w-6 text-red-600 mr-4" />
-                    <p className="text-red-800">{error}</p>
-                </CardContent>
-            </Card>
+      <div className="min-h-screen bg-gray-50 flex">
+        <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+        <div className="flex-1 lg:ml-64 p-4">
+          <Card className="bg-red-50 border-red-200">
+            <CardContent className="p-4 flex items-center">
+              <AlertCircle className="h-6 w-6 text-red-600 mr-4" />
+              <p className="text-red-800">{error}</p>
+            </CardContent>
+          </Card>
         </div>
+      </div>
     );
   }
 
   if (!subscription) {
     return (
-      <div className="container mx-auto p-4">
-             <Card>
-                <CardContent className="p-4 text-center">
-                    <p>Nenhuma assinatura encontrada.</p>
-                </CardContent>
-            </Card>
+      <div className="min-h-screen bg-gray-50 flex">
+        <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+        <div className="flex-1 lg:ml-64 p-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p>Nenhuma assinatura encontrada.</p>
+            </CardContent>
+          </Card>
         </div>
+      </div>
     );
   }
 
   return (
-    <main className="container mx-auto p-4 space-y-6">
-        <h1 className="text-3xl font-bold">Gerenciar Assinatura</h1>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Menu lateral */}
+      <DashboardMenu isOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+      
+      {/* Conteúdo principal */}
+      <div className="flex-1 lg:ml-64">
+        {/* Header mobile */}
+        <div className="lg:hidden bg-white shadow-sm border-b p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">Assinatura</h1>
+            <div className="w-9" /> {/* Spacer */}
+          </div>
+        </div>
+
+        <main className="p-4 lg:p-8 space-y-6">
+          <h1 className="text-3xl font-bold">Gerenciar Assinatura</h1>
         
         <Card>
           <CardHeader>
@@ -148,7 +182,9 @@ const Subscription = () => {
             </Table>
           </CardContent>
         </Card>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 };
 
