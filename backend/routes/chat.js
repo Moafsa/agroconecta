@@ -23,11 +23,12 @@ router.post('/message', async (req, res) => {
     }
 
     // Enviar mensagem para o n8n
-    const n8nResponse = await axios.post(n8nWebhookUrl, {
-      message,
-      produtor_id,
-      timestamp: new Date().toISOString()
-    }, {
+    const n8nResponse = await axios.get(n8nWebhookUrl, {
+      params: {
+        message,
+        produtor_id,
+        timestamp: new Date().toISOString()
+      },
       timeout: 10000 // 10 segundos de timeout
     });
 
