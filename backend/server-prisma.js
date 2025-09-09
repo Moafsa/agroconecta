@@ -57,6 +57,7 @@ app.use('/api/interacoes', require('./routes/interacoes-prisma'));
 app.use('/api/assinaturas', require('./routes/assinaturas'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/verificacao', require('./routes/verificacao')); // Rota de verificação
 app.use('/api/teste-pagamento', testePagamentoRoutes); // Adicionando a rota de teste
 app.use('/api/debug', require('./routes/debug')); // Rota de debug
 

@@ -16,6 +16,7 @@ import TestePagamento from './pages/TestePagamento';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Subscription from './pages/Subscription';
+import Verificacao from './pages/Verificacao';
 
 // Páginas Admin
 import AdminLogin from './pages/AdminLogin';
@@ -23,6 +24,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminPlanos from './pages/AdminPlanos';
 import AdminClientes from './pages/AdminClientes';
 import AdminProfissionais from './pages/AdminProfissionais';
+import AdminVerificacao from './pages/AdminVerificacao';
 import AdminProfile from './pages/AdminProfile';
 import AdminClienteDetalhes from './pages/AdminClienteDetalhes';
 import AdminClienteEditar from './pages/AdminClienteEditar';
@@ -57,6 +59,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+        <Route path="/verificacao" element={<ProtectedRoute><Verificacao /></ProtectedRoute>} />
       </Route>
 
       {/* Rotas do Painel Administrativo (com AdminLayout) */}
@@ -73,6 +76,7 @@ const AppRoutes = () => {
                 <Route path="clientes/:id" element={<AdminClienteDetalhes />} />
                 <Route path="clientes/:id/editar" element={<AdminClienteEditar />} />
                 <Route path="profissionais" element={<AdminProfissionais />} />
+                <Route path="verificacao" element={<AdminVerificacao />} />
                 <Route path="profile" element={<AdminProfile />} />
                 <Route path="*" element={<Navigate to="dashboard" />} />
               </Routes>

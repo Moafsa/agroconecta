@@ -24,6 +24,9 @@ model Admin {
 
   // Relacionamentos
   planos_criados    Plano[]
+  profissionais_verificados Profissional[]
+  documentos_verificados DocumentoVerificacao[]
+  certificacoes_verificadas Certificacao[]
 
   @@map("admins")
 }
@@ -40,6 +43,15 @@ model Profissional {
   status_assinatura      StatusAssinatura @default(PENDENTE)
   asaas_customer_id      String?  @unique // ID do cliente no Asaas
   comissao_plataforma    Float?   // Percentual de comissão da plataforma (0-100)
+  
+  // Sistema de Verificação
+  status_verificacao     StatusVerificacao @default(PENDENTE)
+  nivel_verificacao      NivelVerificacao @default(BASICO)
+  documentos_verificados DocumentoVerificacao[]
+  certificacoes          Certificacao[]
+  data_verificacao       DateTime?
+  admin_verificador_id   String?
+  
   data_cadastro          DateTime @default(now())
   data_atualizacao       DateTime @updatedAt
 
@@ -50,6 +62,7 @@ model Profissional {
   interacoes             Interacao[]
   interacoes_cliente     InteracaoCliente[]
   assinaturas            Assinatura[]
+  admin_verificador      Admin? @relation(fields: [admin_verificador_id], references: [id])
 
   @@map("profissionais")
 }
@@ -395,5 +408,76 @@ enum MetodoPagamento {
   CARTAO_DEBITO
 
   @@map("metodo_pagamento")
+}
+
+enum StatusVerificacao {
+  PENDENTE
+  EM_ANALISE
+  VERIFICADO
+  REJEITADO
+  EXPIRADO
+
+  @@map("status_verificacao")
+}
+
+enum NivelVerificacao {
+  BASICO
+  INTERMEDIARIO
+  AVANCADO
+  PREMIUM
+
+  @@map("nivel_verificacao")
+}
+
+enum TipoDocumento {
+  CPF
+  CNPJ
+  RG
+  CRMV
+  CREA
+  CERTIFICADO_PROFISSIONAL
+  DIPLOMA
+  OUTRO
+
+  @@map("tipo_documento")
+}
+
+model DocumentoVerificacao {
+  id                String   @id @default(cuid())
+  profissional_id   String
+  tipo_documento    TipoDocumento
+  numero_documento  String
+  arquivo_url       String?  // URL do arquivo anexado
+  status            StatusVerificacao @default(PENDENTE)
+  observacoes       String?
+  data_upload       DateTime @default(now())
+  data_verificacao  DateTime?
+  admin_verificador_id String?
+
+  profissional      Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+  admin_verificador Admin? @relation(fields: [admin_verificador_id], references: [id])
+
+  @@map("documentos_verificacao")
+}
+
+model Certificacao {
+  id                String   @id @default(cuid())
+  profissional_id   String
+  nome              String
+  instituicao       String
+  numero_certificado String?
+  data_emissao      DateTime
+  data_validade     DateTime?
+  arquivo_url       String?  // URL do certificado
+  status            StatusVerificacao @default(PENDENTE)
+  observacoes       String?
+  data_upload       DateTime @default(now())
+  data_verificacao  DateTime?
+  admin_verificador_id String?
+
+  profissional      Profissional @relation(fields: [profissional_id], references: [id], onDelete: Cascade)
+  admin_verificador Admin? @relation(fields: [admin_verificador_id], references: [id])
+
+  @@map("certificacoes")
 }
 
