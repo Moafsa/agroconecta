@@ -33,6 +33,7 @@ const Faturas = () => {
   const fetchFaturas = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = localStorage.getItem('token');
       const response = await fetch('/api/faturas/minhas', {
         headers: {
@@ -44,11 +45,42 @@ const Faturas = () => {
         const data = await response.json();
         setFaturas(data.faturas || []);
       } else {
-        setError('Erro ao carregar faturas');
+        const errorData = await response.json();
+        setError(errorData.message || 'Erro ao carregar faturas');
       }
     } catch (error) {
       console.error('Erro ao buscar faturas:', error);
       setError('Erro ao carregar faturas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sincronizarFaturas = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/faturas/sincronizar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Sincronização concluída:', data);
+        // Recarregar faturas após sincronização
+        await fetchFaturas();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Erro ao sincronizar faturas');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar faturas:', error);
+      setError('Erro ao sincronizar faturas');
     } finally {
       setLoading(false);
     }
@@ -147,10 +179,16 @@ const Faturas = () => {
               <h1 className="text-3xl font-bold">Faturas</h1>
               <p className="text-muted-foreground">Histórico de faturas e pagamentos</p>
             </div>
-            <Button onClick={fetchFaturas} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={fetchFaturas} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Atualizar
+              </Button>
+              <Button onClick={sincronizarFaturas} variant="outline" disabled={loading}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sincronizar
+              </Button>
+            </div>
           </div>
 
           {error && (

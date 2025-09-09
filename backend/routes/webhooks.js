@@ -54,6 +54,8 @@ router.post('/asaas', async (req, res) => {
 // Função para tratar criação de pagamento
 async function handlePaymentCreated(payment) {
   try {
+    console.log('Processando criação de pagamento:', payment.id, 'para assinatura:', payment.subscription);
+    
     // Buscar assinatura relacionada (tanto para Profissional quanto para Cliente)
     const assinaturaProfissional = await prisma.assinatura.findUnique({
       where: { asaas_subscription_id: payment.subscription }
@@ -64,7 +66,7 @@ async function handlePaymentCreated(payment) {
     });
 
     if (!assinaturaProfissional && !assinaturaCliente) {
-      console.log('Assinatura não encontrada para o pagamento:', payment.id);
+      console.log('⚠️ Assinatura não encontrada para o pagamento:', payment.id, 'subscription:', payment.subscription);
       return;
     }
     
@@ -78,12 +80,24 @@ async function handlePaymentCreated(payment) {
     });
 
     if (pagamentoExistente) {
-      console.log('Pagamento já existe, pulando criação:', payment.id);
+      console.log('✅ Pagamento já existe, atualizando dados:', payment.id);
+      
+      // Atualizar dados do pagamento existente
+      await pagamentoModel.update({
+        where: { id: pagamentoExistente.id },
+        data: {
+          invoice_url: payment.invoiceUrl,
+          status: mapAsaasStatus(payment.status),
+          metodo_pagamento: mapAsaasBillingType(payment.billingType),
+          data_vencimento: new Date(payment.dueDate),
+          data_pagamento: payment.paymentDate ? new Date(payment.paymentDate) : null
+        }
+      });
       return;
     }
 
     // Criar registro de pagamento
-    await pagamentoModel.create({
+    const novoPagamento = await pagamentoModel.create({
       data: {
         ...(isCliente 
           ? { assinatura_cliente_id: assinatura.id } 
@@ -98,9 +112,19 @@ async function handlePaymentCreated(payment) {
       }
     });
 
-    console.log('Pagamento criado:', payment.id);
+    console.log('✅ Novo pagamento criado:', payment.id, 'ID local:', novoPagamento.id);
+    
+    // Log para debug
+    console.log('📋 Detalhes do pagamento:', {
+      asaas_id: payment.id,
+      valor: payment.value,
+      status: payment.status,
+      invoice_url: payment.invoiceUrl,
+      due_date: payment.dueDate
+    });
+    
   } catch (error) {
-    console.error('Erro ao criar pagamento via webhook:', error);
+    console.error('❌ Erro ao criar pagamento via webhook:', error);
   }
 }
 

@@ -138,7 +138,9 @@ const Subscription = () => {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold">R$ {parseFloat(subscription.valor).toFixed(2)} /mês</p>
-              <p className="text-sm text-gray-500">Próxima cobrança: {formatDate(subscription.data_proxima_cobranca)}</p>
+              <p className="text-sm text-gray-500">
+                Próxima cobrança: {subscription.data_proxima_cobranca ? formatDate(subscription.data_proxima_cobranca) : 'A ser definida'}
+              </p>
             </div>
           </CardContent>
         </Card>

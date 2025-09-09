@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../lib/prisma');
 const auth = require('../middleware/auth');
 const adminAuth = require('../middleware/admin-auth');
+const { mapAsaasStatus, mapAsaasBillingType } = require('../lib/asaas');
 
 const router = express.Router();
 
@@ -10,7 +11,10 @@ const router = express.Router();
 // Buscar faturas do profissional autenticado
 router.get('/minhas', auth, async (req, res) => {
   try {
-    const faturas = await prisma.pagamento.findMany({
+    console.log('Buscando faturas para profissional:', req.profissional?.id);
+    
+    // Buscar faturas tanto de assinaturas profissionais quanto de clientes
+    const faturasProfissional = await prisma.pagamento.findMany({
       where: {
         assinatura: {
           profissional_id: req.profissional.id
@@ -34,8 +38,34 @@ router.get('/minhas', auth, async (req, res) => {
       }
     });
 
-    res.json({
-      faturas: faturas.map(fatura => ({
+    // Buscar faturas de assinaturas de cliente (se o profissional também for cliente)
+    const faturasCliente = await prisma.pagamentoCliente.findMany({
+      where: {
+        assinatura_cliente: {
+          cliente_id: req.profissional.id
+        }
+      },
+      include: {
+        assinatura_cliente: {
+          include: {
+            plano: {
+              select: {
+                id: true,
+                nome: true,
+                descricao: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        data_criacao: 'desc'
+      }
+    });
+
+    // Combinar e formatar todas as faturas
+    const todasFaturas = [
+      ...faturasProfissional.map(fatura => ({
         id: fatura.id,
         asaas_payment_id: fatura.asaas_payment_id,
         valor: parseFloat(fatura.valor),
@@ -45,8 +75,28 @@ router.get('/minhas', auth, async (req, res) => {
         data_pagamento: fatura.data_pagamento,
         data_criacao: fatura.data_criacao,
         invoice_url: fatura.invoice_url,
-        assinatura: fatura.assinatura
+        assinatura: fatura.assinatura,
+        tipo: 'profissional'
+      })),
+      ...faturasCliente.map(fatura => ({
+        id: fatura.id,
+        asaas_payment_id: fatura.asaas_payment_id,
+        valor: parseFloat(fatura.valor),
+        status: fatura.status,
+        metodo_pagamento: fatura.metodo_pagamento,
+        data_vencimento: fatura.data_vencimento,
+        data_pagamento: fatura.data_pagamento,
+        data_criacao: fatura.data_criacao,
+        invoice_url: fatura.invoice_url,
+        assinatura: fatura.assinatura_cliente,
+        tipo: 'cliente'
       }))
+    ].sort((a, b) => new Date(b.data_criacao) - new Date(a.data_criacao));
+
+    console.log('Faturas encontradas:', todasFaturas.length);
+
+    res.json({
+      faturas: todasFaturas
     });
   } catch (error) {
     console.error('Erro ao buscar faturas:', error);
@@ -308,6 +358,75 @@ router.put('/admin/:id/status', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao atualizar status da fatura:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
+// Rota para sincronizar faturas com o Asaas (útil para debug)
+router.post('/sincronizar', auth, async (req, res) => {
+  try {
+    const { getSubscriptionPayments } = require('../lib/asaas');
+    
+    // Buscar todas as assinaturas do profissional
+    const assinaturas = await prisma.assinatura.findMany({
+      where: { profissional_id: req.profissional.id },
+      include: { pagamentos: true }
+    });
+
+    let faturasSincronizadas = 0;
+    let erros = [];
+
+    for (const assinatura of assinaturas) {
+      try {
+        console.log(`Sincronizando assinatura: ${assinatura.asaas_subscription_id}`);
+        
+        // Buscar pagamentos no Asaas
+        const asaasPayments = await getSubscriptionPayments(assinatura.asaas_subscription_id);
+        
+        if (asaasPayments && asaasPayments.data) {
+          for (const asaasPayment of asaasPayments.data) {
+            // Verificar se o pagamento já existe
+            const pagamentoExistente = await prisma.pagamento.findFirst({
+              where: { asaas_payment_id: asaasPayment.id }
+            });
+
+            if (!pagamentoExistente) {
+              // Criar novo pagamento
+              await prisma.pagamento.create({
+                data: {
+                  assinatura_id: assinatura.id,
+                  asaas_payment_id: asaasPayment.id,
+                  invoice_url: asaasPayment.invoiceUrl,
+                  valor: parseFloat(asaasPayment.value),
+                  status: mapAsaasStatus(asaasPayment.status),
+                  metodo_pagamento: mapAsaasBillingType(asaasPayment.billingType),
+                  data_vencimento: new Date(asaasPayment.dueDate),
+                  data_pagamento: asaasPayment.paymentDate ? new Date(asaasPayment.paymentDate) : null
+                }
+              });
+              
+              faturasSincronizadas++;
+              console.log(`✅ Fatura sincronizada: ${asaasPayment.id}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Erro ao sincronizar assinatura ${assinatura.asaas_subscription_id}:`, error);
+        erros.push({
+          assinatura_id: assinatura.asaas_subscription_id,
+          erro: error.message
+        });
+      }
+    }
+
+    res.json({
+      message: 'Sincronização concluída',
+      faturas_sincronizadas: faturasSincronizadas,
+      erros: erros
+    });
+
+  } catch (error) {
+    console.error('Erro na sincronização:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 });
